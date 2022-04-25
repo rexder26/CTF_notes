@@ -1,0 +1,29 @@
+++++++++++Enummeration+++++
+1) d/t nmap scan untill you get full info
+2) use joomscan
+	. joomla -u daily.thm
+++++++++++ATTACK+++++++++++
+3) find exploit with the info you get
+	... joomla 3.7.0 -> vulnerable for sql injection 
+
+4) explit the above vuln using script
+	... https://github.com/stefanlucas/Exploit-Joomla/blob/master/joomblah.py
+	-> you get a database data of user jonah with hashed pass .
+			... Found user [u'811', u'Super User', u'jonah', u'jonah@tryhackme.com', u'$2y$10$0veO/JSFh4389Lluc4Xya.dfy2MF.bZhz0jVMw.V.d3p12kBtZutm', u'', u'']
+
+5) decrypt the  hash with john
+	john hasst.txt -w=wordlist
+			`~~jonah:spiderman123
+
++++++++++++Getting acess++++++++++++++++
+6) login with the above credentials
+7) do a reverse shell with php
+8) in side /var/www/html you get configration.php with password for the user
+	. the user of that account is jjameson
+		jjameson:nv5uz9r3ZEDzVjNu
+9) login to jjameson with above credential with ssh
+10) use sudo -l and you get yum check in GFOUbins
+11) boom! get user and root flag.txt
+
+
+
