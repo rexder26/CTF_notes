@@ -1,1 +1,1 @@
-# This are notes i wrote while i play CTF's
+# These are notes i wrote while i play CTF's
