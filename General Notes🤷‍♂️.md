@@ -121,12 +121,20 @@ git status
 - We can get a problem on the reverse shell and out terminal size for this we can fix with
 	- Checking our terminal
 		- `echo $TERM` -> #tmux-256color
-		- `stty size` -> <row> <col>
+		- `stty size` -> <row\> <col\>
 	- On the reverse shell
 		- `export TERM=<YOURVALUE>`
 		- `stty rows <row> columns <col>`
+## Hash Types
 
-
-
-
-================= { START } ==============================
+```
+Base2	01100010 01110010 01100101 01100001 01101011 01101001 01110100
+Base8	142 162 145 141 153 151 164
+Base16	62 72 65 61 6b 69 74
+Base32	MJZGKYLLNF2A====
+Base58	4jP4KDubX1
+Base62	22udqyscMu
+Base64	YnJlYWtpdA==
+Base85	@WH$gCM@k
+Base91	%zmfv;:YH
+```
