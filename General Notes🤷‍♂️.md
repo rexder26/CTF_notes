@@ -380,3 +380,85 @@ c:\windows NT SERVICE\TrustedInstaller:(F)
 |System|A background system process that runs the Windows kernel.|
 |svchost.exe with RPCSS|Manages system services that run from dynamic-link libraries (files with the extension .dll) such as "Automatic Updates," "Windows Firewall," and "Plug and Play." Uses the Remote Procedure Call (RPC) Service (RPCSS).|
 |svchost.exe with Dcom/PnP|Manages system services that run from dynamic-link libraries (files with the extension .dll) such as "Automatic Updates," "Windows Firewall," and "Plug and Play." Uses the Distributed Component Object Model (DCOM) and Plug and Play (PnP) services.|
+- Examining Services with PS
+	- `sc qc <ServiceName>`
+	- To check service on network
+		- `sc //<IP>`
+	- To Start/stop Serice
+		- `sc start <serivename>` can be `stop` too
+	- sc would give us the ability to quickly search and analyze commonly targeted services and newly created services.
+		- `sc sdshow <ServiceName>`
+- examine service permissions by targeting the path of a specific service in the registry
+	- `Get-ACL -Path HKLM:\System\CurrentControlSet\Services\wuauserv | Format-List`
+- There are 3 types of non-interactive accounts: the `Local System Account`, `Local Service Account`, and the `Network Service Account`.
+
+|Account|Description|
+|---|---|
+|Local System Account|Also known as the `NT AUTHORITY\SYSTEM` account, this is the most powerful account in Windows systems. It is used for a variety of OS-related tasks, such as starting Windows services. This account is more powerful than accounts in the local administrators group.|
+|Local Service Account|Known as the `NT AUTHORITY\LocalService` account, this is a less privileged version of the SYSTEM account and has similar privileges to a local user account. It is granted limited functionality and can start some services.|
+|Network Service Account|This is known as the `NT AUTHORITY\NetworkService` account and is similar to a standard domain user account. It has similar privileges to the Local Service Account on the local machine. It can establish authenticated sessions for certain network services.|
+## PowerShell
+- PowerShell utilizes [cmdlets](https://docs.microsoft.com/en-us/powershell/scripting/developer/cmdlet/cmdlet-overview?view=powershell-7), which are small single-function tools built into the shell. There are more than 100 core cmdlets, and many additional ones have been written, or we can author our own to perform more complex tasks
+- Cmdlets are in the form of `Verb-Noun`. 
+	- For example, 
+		- `Get-ChildItem` - same as `ls`
+			- `Get-ChildItem -Recurse`
+			- `get-ChildItem -Path C:\` 
+		- `Get-Alias` - to get the short form of the cmdlets
+		- To Create Alias - `New-Alias -Name "Show-Files" Get-ChildItem`
+		- 
+- we will find that we are unable to run scripts on a system. This is due to a security feature called the `execution policy`
+	- To see the Policy 
+		- `Get-ExecutionPolicy -List`
+	- A user can easily bypass the policy by either typing the script contents directly into the PowerShell window, downloading and invoking the script, or specifying the script as an encoded command.
+	- can also be bypassed by adjusting the execution policy
+		- `Set-ExecutionPolicy Bypass -Scope Process`
+- Grep for windows  - `Where-Object { $_.DisplayName -eq "FoxitReaderUpdateService" }`
+- To get info about user - `Get-WmiObject -Class Win32_UserAccount -Filter "Name='username'"`
+- Info of Group - `Get-WmiObject -Class Win32_Group -Filter "Name='GroupName'"`
+	- SID - `(SID)-(revision level)-(identifier-authority)-(subauthority1)-(subauthority2)-(etc)`
+- To Create User - `New-LocalUser -Name "username"`
+- Create Group - `New-LocalGroup -Name "HR" -Description "HR Department"`
+	- Add user to group - `Add-LocalGroupMember -Group "HR" -Member "Jim"`
+## Windows Management Instrumentation(WMI)
+- Windows Management Instrumentation(WMI) is a subsystem of PowerShell that provides system administrators with powerful tools for system monitoring
+- Some of the uses for WMI are:
+	- Status information for local/remote systems
+	- Configuring security settings on remote machines/applications
+	- Setting and changing user and group permissions
+	- Setting/modifying system properties
+	- Code execution
+	- Scheduling processes
+	- Setting up logging
+- To read computername - `wmic computersystem get name`
+- Information about the OS - `wmic os list brief`
+## Registry
+- The [Registry](https://en.wikipedia.org/wiki/Windows_Registry) is a hierarchical database in Windows critical for the operating system.
+- divided into computer-specific and user-specific data
+- The tree-structure consists of main folders (root keys) in which subfolders (subkeys) with their entries/files (values) are located. There are 11 different types of values that can be entered in a subkey.
+	- ![[Pasted image 20231123105821.png]]
+	- Each folder under `Computer` is a key.
+	- The root keys all start with `HKEY`.
+		- A key such as `HKEY-LOCAL-MACHINE` is abbreviated to `HKLM`
+			- HKLM contains all settings that are relevant to the local system.
+			- contains six subkeys like `SAM`, `SECURITY`, `SYSTEM`, `SOFTWARE`, `HARDWARE`, and `BCD`
+		- system registry is stored in several files on the operating system. You can find these under `C:\Windows\System32\Config\`
+		- user-specific registry hive (HKCU) is stored in the user folder (i.e., `C:\Users\<USERNAME>\Ntuser.dat`). 
+### Run and RunOnce Registry Keys
+- registry hives, which contain a logical group of keys, subkeys, and values to support software and files loaded into memory when the operating system is started or a user logs in, These hives are called run/runonce registry keys
+- The Windows registry includes the following four keys:
+```powershell
+HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Run
+HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run
+HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\RunOnce
+HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\RunOnce
+```
+8
+```powershell
+PS C:\htb> reg query HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run
+
+HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run
+    OneDrive    REG_SZ    "C:\Users\bob\AppData\Local\Microsoft\OneDrive\OneDrive.exe" /background
+    OPENVPN-GUI    REG_SZ    C:\Program Files\OpenVPN\bin\openvpn-gui.exe
+    Docker Desktop    REG_SZ    C:\Program Files\Docker\Docker\Docker Desktop.ex
+```
